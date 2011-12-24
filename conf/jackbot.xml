@@ -1,0 +1,35 @@
+<Config>
+   <!-- Basic configuration.
+        logLevels, from quiet to noisey, are: off, severe, warning, info, fine, finer, finest, all
+   -->
+   <JackBot nick="Jack" description="JackBot IRC Bot" logLevel="info">
+      <!-- The scripting engine to use. -->
+      <script-engine class="net.ardvaark.jackbot.scripting.ecma.ECMAEngine" />
+
+      <!-- The server and any alternates. -->
+      <server name="irc.enterthegame.com" />
+      <server name="ky.enterthegame.com" />
+      <server name="in.enterthegame.com" />
+      <server name="tx.enterthegame.com" />
+      <server name="oh.enterthegame.com" />
+      <server name="wa.enterthegame.com" />
+      <server name="canada.enterthegame.com" />
+      <server name="netherlands.enterthegame.com" />
+      <server name="sweden.enterthegame.com" />
+      <server name="singapore.enterthegame.com" />
+      
+      <!-- Load any Java-based plugins. -->
+      <plugin name="net.ardvaark.jackbot.plugin.BasicIRCFunctions" />
+      
+      <!-- Load some script files. -->
+      <script file="amyrlin.js" />
+      
+      <!-- The script to run after logging in to the server. -->
+      <logon-script name="JackBot Logon Script">
+      <![CDATA[
+         bot.loadUsers("users.xml");
+         bot.join("#jackbot");
+      ]]>
+      </logon-script>
+   </JackBot>
+</Config>

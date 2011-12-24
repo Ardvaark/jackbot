@@ -1,0 +1,32 @@
+<Config>
+   <!-- Basic configuration.
+        logLevels, from quiet to noisey, are: OFF, FATAL, ERROR, WARN, INFO, TRACE, ALL
+   -->
+   <JackBot nick="Jack" description="JackBot IRC Bot" logLevel="ALL">
+   	  <load path="plugins/*.jar"/>
+   	  
+      <!-- The scripting engine to use. -->
+      <script-engine class="net.ardvaark.jackbot.scripting.ecma.ECMAEngine" />
+      
+      <!-- The server and any alternates. -->
+      <server name="irc.10forward.com" />
+      
+      <!-- Load any Java-based plugins. -->
+      <!-- <plugin name="full.java.class" /> -->
+      
+      <!-- Load some script files. -->
+      <!-- <script file="js/amyrlin.js" />  -->
+      <!-- <script file="js/cheddar2.js" /> -->
+      <!-- <script file="js/twitter.js" /> -->
+	  <!-- <script file="js/fortune.js" /> -->
+      
+      <!-- The script to run after logging in to the server. -->
+      <logon-script name="JackBot Logon Script">
+      <![CDATA[
+      	 bot.fortuneBinPath = "c:/cygwin/bin/fortune.exe";
+      	 
+         bot.join("#botdev");
+      ]]>
+      </logon-script>
+   </JackBot>
+</Config>

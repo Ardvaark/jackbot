@@ -1,0 +1,29 @@
+<Config>
+   <!-- Basic configuration.
+        logLevels, from quiet to noisey, are: off, severe, warning, info, fine, finer, finest, all
+   -->
+   <JackBot nick="Jack" description="JackBot IRC Bot" logLevel="finer">
+      <!-- The scripting engine to use. -->
+      <script-engine class="net.ardvaark.jackbot.scripting.ecma.ECMAEngine" />
+      
+      <!-- The server and any alternates. -->
+      <server name="irc.10forward.com" />
+      <server name="root.10forward.com" />
+      
+      <!-- Load any Java-based plugins. -->
+      <plugin name="net.ardvaark.jackbot.plugin.BasicIRCFunctions" />
+      <plugin name="net.ardvaark.jackbot.plugin.cheddarbot.CheddarBot" />
+      
+      <!-- Load some script files. -->
+      <script file="amyrlin.js" />
+      <script file="ninll.js" />
+      
+      <!-- The script to run after logging in to the server. -->
+      <logon-script name="JackBot Logon Script">
+      <![CDATA[
+         bot.loadUsers("users.xml");
+         bot.join("#jackbot");
+      ]]>
+      </logon-script>
+   </JackBot>
+</Config>

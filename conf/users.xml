@@ -1,0 +1,9 @@
+<users>
+	<user username="scud" mask="*!*SCUD1373@*.client.attbi.com" autoOp="true" level="500" />
+	<user username="ardvaark" mask="*!*ardvaark@*.interaccess.com" autoOp="true" level="1000" />
+	<user username="red" mask="*!*iampavlov@*.in.comcast.net" autoOp="true" level="500" />
+	<user username="reap" mask="*!*grim@*.mn.astound.net" autoOp="true" level="500" />
+	<user username="greg" mask="*!*gb@*.interaccess.com" autoOp="true" level="500" />
+	<user username="sp4ce" mask="*!*Sp4ce*@*.client.attbi.com" autoOp="true" level="500" />
+</users>
+

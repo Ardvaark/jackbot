@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly>
+	<id>uber</id>
+	<formats>
+		<format>jar</format>
+	</formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
+
+	<fileSets>
+		<fileSet>
+			<directory>target/classworlds-boot-unpack</directory>
+			<outputDirectory></outputDirectory>
+		</fileSet>
+		<fileSet>
+			<directory>src/assembly/uber</directory>
+			<outputDirectory></outputDirectory>
+		</fileSet>
+	</fileSets>
+	
+	<files>
+		<file>
+			<source>target/${pom.artifactId}-${pom.version}.${pom.packaging}</source>
+			<outputDirectory>WORLDS-INF/lib</outputDirectory>
+			<destName>${pom.artifactId}-core.${pom.packaging}</destName>
+		</file>
+		<file>
+			<source>src/main/resources/net/ardvaark/jackbot/classworlds.conf</source>
+			<outputDirectory>WORLDS-INF/conf</outputDirectory>
+		</file>
+	</files>
+	
+	<dependencySets>
+		<dependencySet>
+			<outputDirectory>WORLDS-INF/lib</outputDirectory>
+			<outputFileNameMapping>${artifactId}.${extension}</outputFileNameMapping>
+			<scope>runtime</scope>
+			<excludes>
+				<!-- Exclude classworlds-boot, since it gets expanded into
+					 and included from the target/classes directory. -->
+				<exclude>classworlds:classworlds-boot</exclude>
+
+				<!-- And exclude classworlds, since it needs to go in a
+					 different spot. -->
+				<exclude>classworlds:classworlds</exclude>
+			</excludes>
+		</dependencySet>
+		
+		<dependencySet>
+			<outputDirectory>WORLDS-INF</outputDirectory>
+			<outputFileNameMapping>${artifactId}.${extension}</outputFileNameMapping>
+			<includes>
+				<include>classworlds:classworlds</include>
+			</includes>
+		</dependencySet>
+	</dependencySets>
+</assembly>
