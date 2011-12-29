@@ -17,14 +17,6 @@
 
 package net.ardvaark.jackbot.scripting.ecma;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringTokenizer;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import net.ardvaark.jackbot.CTCPMessage;
 import net.ardvaark.jackbot.EventIRCClient;
 import net.ardvaark.jackbot.IRC;
@@ -33,7 +25,7 @@ import net.ardvaark.jackbot.logging.Log;
 import net.ardvaark.jackbot.scripting.ScriptException;
 import net.ardvaark.jackbot.scripting.ecma.async.AsyncTaskRunner;
 import net.ardvaark.jackbot.scripting.ecma.async.TimeoutScheduler;
-
+import org.apache.commons.io.IOUtils;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.Scriptable;
@@ -41,6 +33,12 @@ import org.mozilla.javascript.ScriptableObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXParseException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.FileInputStream;
+import java.util.*;
 
 /**
  * A JackBot scripting engine that utilizes the Rhino JavaScript engine to
@@ -65,7 +63,6 @@ public class ECMAEngine implements net.ardvaark.jackbot.scripting.ScriptingEngin
         this.executedFiles = Collections.synchronizedSet(new HashSet<String>());
         this.timeoutScheduler = new TimeoutScheduler(this);
         this.asyncRunner = new AsyncTaskRunner(this);
-        this.guard = new Guard();
         this.initializeEngine();
     }
 
@@ -192,8 +189,25 @@ public class ECMAEngine implements net.ardvaark.jackbot.scripting.ScriptingEngin
      */
     Object executeFile(String fileName) throws Exception
     {
-        Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(fileName);
-        Element rootElement = doc.getDocumentElement();
+        Element rootElement;
+        DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+
+        try {
+            Document doc = docBuilder.parse(fileName);
+            rootElement = doc.getDocumentElement();
+        }
+        catch (SAXParseException e) {
+            // If we're unable to parse this as an XML file,
+            // let's try wrapping the file in a made-up XML document, so we can cleanly load bare script files
+            // (i.e. with no XML wrapper).
+            String scriptText = IOUtils.toString(new FileInputStream(fileName), "UTF-8");
+
+            Document doc = docBuilder.newDocument();
+            rootElement = doc.createElement("script");
+            rootElement.setTextContent(scriptText);
+            rootElement.setAttribute("name", fileName);
+        }
+
         return this.internalExecute(rootElement);
     }
 
@@ -357,11 +371,6 @@ public class ECMAEngine implements net.ardvaark.jackbot.scripting.ScriptingEngin
     EventIRCClient getClient()
     {
         return this.client;
-    }
-
-    Guard getGuard()
-    {
-        return this.guard;
     }
 
     /**
@@ -646,9 +655,4 @@ public class ECMAEngine implements net.ardvaark.jackbot.scripting.ScriptingEngin
      * For executing timeout events.
      */
     private TimeoutScheduler timeoutScheduler;
-    
-    /**
-     * Guard class to manage multi-threaded use of the object model.
-     */
-    private Guard guard;
 }

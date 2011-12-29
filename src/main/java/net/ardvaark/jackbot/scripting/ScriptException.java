@@ -42,7 +42,7 @@ public class ScriptException extends net.ardvaark.jackbot.IRCException
     /**
      * Constructs a new <CODE>ScriptException</CODE>.
      * 
-     * @param innerException The exception which caused this exception.
+     * @param inner The exception which caused this exception.
      */
     public ScriptException(Exception inner)
     {

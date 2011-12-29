@@ -1,5 +1,7 @@
 <script name="Twitter">
     <script file="js/jacklib.js" />
+    <script file="js/jsOAuth-1.3.1.js" />
+
     <![CDATA[
              
 	function TwitterClient(channel, twitterUsername, twitterPassword)

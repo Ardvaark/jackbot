@@ -17,14 +17,12 @@
       <!-- Load some script files. -->
       <!-- <script file="js/amyrlin.js" />  -->
       <!-- <script file="js/cheddar2.js" /> -->
-      <!-- <script file="js/twitter.js" /> -->
+      <script file="js/twitter.js" />
 	  <!-- <script file="js/fortune.js" /> -->
       
       <!-- The script to run after logging in to the server. -->
       <logon-script name="JackBot Logon Script">
       <![CDATA[
-      	 bot.fortuneBinPath = "c:/cygwin/bin/fortune.exe";
-      	 
          bot.join("#botdev");
       ]]>
       </logon-script>
