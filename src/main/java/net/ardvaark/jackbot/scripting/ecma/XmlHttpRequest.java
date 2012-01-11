@@ -44,6 +44,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.commons.io.IOUtils;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.xml.XMLObject;
 import org.mozilla.javascript.xmlimpl.XMLLibImpl;
@@ -200,6 +201,7 @@ public class XmlHttpRequest extends HostObject
         this.responseHeaders = new HashMap<String, List<Header>>();
         
         this.addEvent(HANDLER_ON_READY_STATE_CHANGE);
+        this.addEvent(HANDLER_ON_READY_STATE_CHANGE.toLowerCase()); // Some stupid scripts assume an all-lowercase event name.
     }
     
     /**
@@ -209,7 +211,7 @@ public class XmlHttpRequest extends HostObject
      * @see State
      * @see http://www.w3.org/TR/XMLHttpRequest/#xmlhttprequest
      */
-    public synchronized short jsGet_readyState()
+    public synchronized int jsGet_readyState()
     {
         return this.currentState.getValue();
     }
@@ -246,6 +248,16 @@ public class XmlHttpRequest extends HostObject
     public synchronized String jsGet_statusText() throws ScriptException
     {
         return this.currentState.getStatusText();
+    }
+
+    /**
+     * Gets the status code returned by the server.
+     *
+     * @return Returns the current HTTP status code.
+     * @throws ScriptException Thrown if the status code cannot be obtained.
+     */
+    public synchronized int jsGet_status() throws ScriptException {
+        return this.currentState.getStatusCode();
     }
     
     /**
@@ -366,6 +378,7 @@ public class XmlHttpRequest extends HostObject
     private void fireReadyStateChanged() throws ScriptException
     {
         this.fireHandler(HANDLER_ON_READY_STATE_CHANGE);
+        this.fireHandler(HANDLER_ON_READY_STATE_CHANGE.toLowerCase());
     }
     
     private synchronized boolean changeState(RequestState newState)
@@ -398,9 +411,10 @@ public class XmlHttpRequest extends HostObject
         return this.changeState(new OpenedState());
     }
     
-    private boolean changeToHeadersReceivedState(String statustext)
+    private boolean changeToHeadersReceivedState(int statusCode, String statustext)
     {
         HeadersReceivedState newState = new HeadersReceivedState();
+        newState.setStatusCode(statusCode);
         newState.setStatusText(statustext);
         return this.changeState(newState);
     }
@@ -533,7 +547,7 @@ public class XmlHttpRequest extends HostObject
             return null; // Will never happen
         }
         
-        public short getStatus() throws ScriptException
+        public int getStatusCode() throws ScriptException
         {
             this.throwInvalidStateException();
             return 0; // Will never happen
@@ -739,7 +753,10 @@ public class XmlHttpRequest extends HostObject
             final HttpMethod method = runningMethod = this.createRequest(entity);
             final HttpClient client = new HttpClient();
             final HttpState state = new HttpState();
-            
+
+            // Useful for debugging with Charles
+            client.getHostConfiguration().setProxy("localhost", 8889);
+
             HttpClientParams params = new HttpClientParams(standardParmaters);
             
             if (storedUsername != null)
@@ -750,6 +767,11 @@ public class XmlHttpRequest extends HostObject
             }
 
             method.setParams(params);
+
+            // Set the request headers.
+            for (Header requestHeader : requestHeaders) {
+                method.addRequestHeader(requestHeader);
+            }
 
             // 6. Synchronously dispatch a readystatechange event on the object.
             // Note: The state of the object does not change. The event is dispatched for historical reasons.
@@ -778,7 +800,10 @@ public class XmlHttpRequest extends HostObject
                         if (!aborted)
                         {
                             saveResponseHeaders(method.getResponseHeaders());
-                            changeToHeadersReceivedState(method.getStatusText());
+                            changeToHeadersReceivedState(method.getStatusCode(), method.getStatusText());
+
+                            log.trace("Response: {0} {1}", method.getStatusCode(), method.getStatusText());
+
                             fireReadyStateChanged();
                         }
 
@@ -791,6 +816,11 @@ public class XmlHttpRequest extends HostObject
                         if (!aborted)
                         {
                             responseData = method.getResponseBody();
+
+                            if (log.isTraceEnabled()) {
+                                String responseBody = new String(responseData, "UTF-8");
+                                log.trace("Response body: {0}", responseBody);
+                            }
                         }
                         
                         if (!aborted)
@@ -919,6 +949,7 @@ public class XmlHttpRequest extends HostObject
 
     private class HeadersReceivedState extends RequestState
     {
+        private int statusCode;
         private String statusText;
         
         public HeadersReceivedState()
@@ -930,7 +961,15 @@ public class XmlHttpRequest extends HostObject
         {
             super(state);
         }
-        
+
+        public int getStatusCode() {
+            return statusCode;
+        }
+
+        public void setStatusCode(int statusCode) {
+            this.statusCode = statusCode;
+        }
+
         @Override
         public String getStatusText() throws ScriptException
         {

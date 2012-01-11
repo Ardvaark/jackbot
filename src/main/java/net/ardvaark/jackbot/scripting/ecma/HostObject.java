@@ -17,14 +17,13 @@
 
 package net.ardvaark.jackbot.scripting.ecma;
 
-import java.util.HashMap;
-
 import net.ardvaark.jackbot.logging.Log;
 import net.ardvaark.jackbot.scripting.ScriptException;
-
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+
+import java.util.HashMap;
 
 /**
  * The base class of all Host Objects in the JackBot ECMAScript engine. This
@@ -178,6 +177,16 @@ abstract class HostObject extends ScriptableObject
                 throw new ScriptException("Caught exception while firing event hander for " + handler, e);
             }
         }
+    }
+
+    /**
+     * Determines if a handler with the given name exists on this object.
+     *
+     * @param handlerName The name of the handler.
+     * @return Returns true if the handler exists on this host object; false otherwise.
+     */
+    protected boolean hasHandler(String handlerName) {
+        return this.eventHandlers.containsKey(handlerName);
     }
 
     /**

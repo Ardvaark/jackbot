@@ -37,8 +37,10 @@ import org.xml.sax.SAXParseException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.FileInputStream;
+import java.io.*;
 import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * A JackBot scripting engine that utilizes the Rhino JavaScript engine to
@@ -63,6 +65,7 @@ public class ECMAEngine implements net.ardvaark.jackbot.scripting.ScriptingEngin
         this.executedFiles = Collections.synchronizedSet(new HashSet<String>());
         this.timeoutScheduler = new TimeoutScheduler(this);
         this.asyncRunner = new AsyncTaskRunner(this);
+        this.loadPersistentDataStore();
         this.initializeEngine();
     }
 
@@ -265,7 +268,60 @@ public class ECMAEngine implements net.ardvaark.jackbot.scripting.ScriptingEngin
         this.context = null;
         this.executedFiles.clear();
     }
-    
+
+    void persistData(String key, Object value) {
+        this.persistentDataStoreLock.writeLock().lock();
+
+        try {
+            log.info("Persisting data: {0} -> {1}", key, value);
+            this.persistentDataStore.put(key, value);
+            this.serializePersistentDataStore();
+        }
+        finally {
+            this.persistentDataStoreLock.writeLock().unlock();
+        }
+    }
+
+    Object retrieveData(String key) {
+        this.persistentDataStoreLock.readLock().lock();
+
+        try {
+            return this.persistentDataStore.get(key);
+        }
+        finally {
+            this.persistentDataStoreLock.readLock().unlock();
+        }
+    }
+
+    private void loadPersistentDataStore() {
+        try {
+            ObjectInputStream ois = new ObjectInputStream(new FileInputStream("persistent-data-store.bin"));
+            this.persistentDataStore = (HashMap<String, Object>)ois.readObject();
+        }
+        catch (FileNotFoundException e) {
+            // New data store
+            this.persistentDataStore = new HashMap<String, Object>();
+        }
+        catch (ClassNotFoundException e) {
+            log.error("Persistent data store is corrupted.", e);
+            this.persistentDataStore = new HashMap<String, Object>();
+        }
+        catch (IOException e) {
+            log.error("Persistent data store is corrupted.", e);
+            this.persistentDataStore = new HashMap<String, Object>();
+        }
+    }
+
+    private void serializePersistentDataStore() {
+        try {
+            ObjectOutputStream ois = new ObjectOutputStream(new FileOutputStream("persistent-data-store.bin"));
+            ois.writeObject(this.persistentDataStore);
+        }
+        catch (IOException e) {
+            log.error("Unable to write persistent data store.", e);
+        }
+    }
+
     /**
      * Called when an IRC message is received from the server.
      * 
@@ -655,4 +711,7 @@ public class ECMAEngine implements net.ardvaark.jackbot.scripting.ScriptingEngin
      * For executing timeout events.
      */
     private TimeoutScheduler timeoutScheduler;
+
+    private ReadWriteLock persistentDataStoreLock = new ReentrantReadWriteLock(true);
+    private HashMap<String, Object> persistentDataStore;
 }

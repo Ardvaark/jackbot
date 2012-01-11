@@ -17,21 +17,22 @@
 
 package net.ardvaark.jackbot.scripting.ecma;
 
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
-import java.text.MessageFormat;
-
 import net.ardvaark.jackbot.IRC;
 import net.ardvaark.jackbot.IRCMessage;
 import net.ardvaark.jackbot.IRCUtils;
 import net.ardvaark.jackbot.logging.Log;
 import net.ardvaark.jackbot.scripting.ScriptException;
-
+import org.apache.commons.httpclient.URIException;
+import org.apache.commons.httpclient.util.URIUtil;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.w3c.dom.Document;
+
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.text.MessageFormat;
 
 /**
  * ECMAScript host object <CODE>Bot</CODE>. The <code>Bot</code> class is
@@ -362,6 +363,32 @@ public class Bot extends HostObject
         this.getEngine().cancelTimeout(key);
     }
 
+    public String jsFunction_decodeURIComponent(String encodedUriComponent) throws ScriptException {
+        try {
+            return URIUtil.decode(encodedUriComponent);
+        }
+        catch (URIException e) {
+            throw new ScriptException(e);
+        }
+    }
+
+    public String jsFunction_encodeURIComponent(String rawUriComponent) throws ScriptException {
+        try {
+            return URIUtil.encodeWithinQuery(rawUriComponent);
+        }
+        catch (URIException e) {
+            throw new ScriptException(e);
+        }
+    }
+
+    public void jsFunction_persistData(String key, Object value) {
+        this.getEngine().persistData(key, value);
+    }
+
+    public Object jsFunction_retrieveData(String key) {
+        return this.getEngine().retrieveData(key);
+    }
+
     /**
      * Causes the bot to part all channels in which it is currently listening.
      * 
@@ -579,8 +606,7 @@ public class Bot extends HostObject
             channelInstance.onTopic(newTopic, changer);
         }
 
-        Object[] args =
-        { channel, newTopic, changer };
+        Object[] args = { channel, newTopic, changer };
         this.fireHandler(Bot.HANDLER_ON_TOPIC, args);
     }
 

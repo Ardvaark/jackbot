@@ -24,6 +24,8 @@
       <logon-script name="JackBot Logon Script">
       <![CDATA[
          bot.join("#botdev");
+
+         var twitter = new TwitterClient("#botdev", "PoundTVD", "foo");
       ]]>
       </logon-script>
    </JackBot>
