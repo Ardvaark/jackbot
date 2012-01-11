@@ -1,13 +1,12 @@
 package net.ardvaark.jackbot.scripting.ecma.async;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-
+import net.ardvaark.jackbot.logging.Log;
+import net.ardvaark.jackbot.scripting.ecma.ECMAEngine;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
 
-import net.ardvaark.jackbot.logging.Log;
-import net.ardvaark.jackbot.scripting.ecma.ECMAEngine;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public abstract class AsyncBase
 {
