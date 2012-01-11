@@ -32,7 +32,7 @@
 	<dependencySets>
 		<dependencySet>
 			<outputDirectory>WORLDS-INF/lib</outputDirectory>
-			<outputFileNameMapping>${artifactId}.${extension}</outputFileNameMapping>
+			<outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
 			<scope>runtime</scope>
 			<excludes>
 				<!-- Exclude classworlds-boot, since it gets expanded into
@@ -47,7 +47,7 @@
 		
 		<dependencySet>
 			<outputDirectory>WORLDS-INF</outputDirectory>
-			<outputFileNameMapping>${artifactId}.${extension}</outputFileNameMapping>
+			<outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
 			<includes>
 				<include>classworlds:classworlds</include>
 			</includes>
