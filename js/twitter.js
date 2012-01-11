@@ -129,7 +129,14 @@
 	   		    twitter.oauth.post(url, null,
 
 	   		        function(data) { // Success
-                        cmd.respond("Now following " + id + ".");
+	   		            var user = JSON.parse(data.text);
+
+	   		            if (user.screen_name) {
+                            cmd.respond("Now following @" + user.screen_name + ".");
+	   		            }
+	   		            else {
+	   		                cmd.respond("User not found.");
+	   		            }
 	   		        },
 
 	   		        function(data) { // Failure
