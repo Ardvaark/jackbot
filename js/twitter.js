@@ -294,8 +294,9 @@
 	   		    function(statuses) { // Success
 	   		        if (statuses.length > 0) {
 	   		            twitter.lastStatus = statuses[0].id_str;
-	   		            successFunc(statuses);
 	   		        }
+
+                    successFunc(statuses);
 	   		    },
 
 	   		    function(data) { // Failure
