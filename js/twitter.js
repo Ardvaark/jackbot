@@ -310,7 +310,7 @@
 			twitter.checkTimeline(
 			    function(statuses) { // Success
                     for (var i = statuses.length - 1; i >= 0; i--) {
-                        var status = status[i];
+                        var status = statuses[i];
 
                         if (status.user.screen_name != twitter.username) {
                             cmd.respond(status.user.screen_name + ": " + status.text, true);
@@ -324,28 +324,28 @@
 			);
 	   	};
 	    
-	   	this.checkTimelineForChannel = function(timeout)
-	   	{
+	   	this.checkTimelineForChannel = function(timeout) {
 			twitter.checkTimeline(
 			    function(statuses) { // Success
 			        twitter.timelineFailureCount = 0;
-	   				bot.setTimeout("twitter-" + twitter.channel, function() { twitter.checkTimelineForChannel(timeout); }, timeout);
 
                     for (var i = statuses.length - 1; i >= 0; i--) {
-                        var status = status[i];
+                        var status = statuses[i];
 
                         if (status.user.screen_name != twitter.username) {
-                            cmd.respond(status.user.screen_name + ": " + status.text, true);
+                            bot.say(twitter.channel, status.user.screen_name + ": " + status.text, true);
                         }
                     }
+
+	   				bot.setTimeout("twitter-" + twitter.channel, function() { twitter.checkTimelineForChannel(timeout); }, timeout);
 			    },
 
 			    function(data) { // Failure
-	   				bot.setTimeout("twitter-" + twitter.channel, function() { twitter.checkTimelineForChannel(timeout); }, timeout);
-
 			        if (++twitter.timelineFailureCount % 37 == 0) {
 			            bot.notice(twitter.channel, "I haven't been able to successfully check Twitter in a while.");
 			        }
+
+	   				bot.setTimeout("twitter-" + twitter.channel, function() { twitter.checkTimelineForChannel(timeout); }, timeout);
 			    }
 			);
 
@@ -377,7 +377,7 @@
 	    bot.addCmdListener("authorize",    this.cmdAuthorize,               50, "Authorize me with Twitter.");
 	    bot.addCmdListener("authpin",      this.cmdCompleteAuthorization,   50, "Complete my Twitter authorization.");
 
-	    // bot.setTimeout("twitter-" + this.channel, function() { twitter.checkTimelineForChannel(181 * 1000); }, (7 + Math.floor(Math.random() * 60)) * 1000);
+	    bot.setTimeout("twitter-" + this.channel, function() { twitter.checkTimelineForChannel(181 * 1000); }, (7 + Math.floor(Math.random() * 60)) * 1000);
 	}
 
 	]]>
