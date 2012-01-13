@@ -385,7 +385,7 @@
 	    bot.addCmdListener("authorize",    this.cmdAuthorize,               50, "Authorize me with Twitter.");
 	    bot.addCmdListener("authpin",      this.cmdCompleteAuthorization,   50, "Complete my Twitter authorization.");
 
-	    bot.setTimeout("twitter-" + this.channel, function() { twitter.checkTimelineForChannel(181 * 1000); }, (7 + Math.floor(Math.random() * 60)) * 1000);
+	    bot.setTimeout("twitter-" + this.channel, function() { twitter.checkTimelineForChannel(29 * 1000); }, (7 + Math.floor(Math.random() * 60)) * 1000);
 	}
 
 	]]>
