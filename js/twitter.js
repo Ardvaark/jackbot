@@ -364,13 +364,27 @@
 		        {
 		            if (channelName == twitter.channel && topic != ".")
 		            {
+		                if (topic.length > 140) {
+		                    topic = topic.substr(0, 140);
+		                }
+
 		                twitter.tweet(topic,
 		                    function(data) { // Success
 		                        // Succeed quietly
 		                    },
 
 		                    function(data) { // Failure
-		                        bot.notice(channelName, "Unable to tweet topic: " + data.text);
+		                        var responseMessage;
+
+                                try {
+                                    var twitterError = JSON.parse(data.text);
+                                    responseMessage = twitterError.error;
+                                }
+                                catch (err) {
+                                    responseMessage = data.text;
+                                }
+
+                                bot.notice(channelName, "Unable to tweet topic: " + resoponseMessage);
 		                    }
 		                );
 		            }
@@ -385,7 +399,7 @@
 	    bot.addCmdListener("authorize",    this.cmdAuthorize,               50, "Authorize me with Twitter.");
 	    bot.addCmdListener("authpin",      this.cmdCompleteAuthorization,   50, "Complete my Twitter authorization.");
 
-	    bot.setTimeout("twitter-" + this.channel, function() { twitter.checkTimelineForChannel(29 * 1000); }, (7 + Math.floor(Math.random() * 60)) * 1000);
+	    bot.setTimeout("twitter-" + this.channel, function() { twitter.checkTimelineForChannel(29 * 1000); }, (1 + Math.floor(Math.random() * 29)) * 1000);
 	}
 
 	]]>
