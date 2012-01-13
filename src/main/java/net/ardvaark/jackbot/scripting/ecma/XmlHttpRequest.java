@@ -164,6 +164,8 @@ public class XmlHttpRequest extends HostObject
     // Response info
     private Map<String, List<Header>> responseHeaders;
     private byte[] responseData;
+    private int statusCode;
+    private String statusText;
     
     /**
      * Gets the ECMAScript class name for this object.
@@ -411,35 +413,21 @@ public class XmlHttpRequest extends HostObject
         return this.changeState(new OpenedState());
     }
     
-    private boolean changeToHeadersReceivedState(int statusCode, String statustext)
+    private boolean changeToHeadersReceivedState(int statusCode, String statusText)
     {
-        HeadersReceivedState newState = new HeadersReceivedState();
-        newState.setStatusCode(statusCode);
-        newState.setStatusText(statustext);
+        HeadersReceivedState newState = new HeadersReceivedState(statusCode, statusText);
         return this.changeState(newState);
     }
     
     private boolean changeToLoadingState()
     {
-        LoadingState newState = new LoadingState();
-        
-        if (currentState instanceof HeadersReceivedState)
-        {
-            newState.setStatusText(((HeadersReceivedState)currentState).statusText);
-        }
-        
-        return this.changeState(newState);
+        return this.changeState(new LoadingState());
     }
     
     private boolean changeToDoneState(boolean errorFlag)
     {
         DoneState newState = new DoneState();
         newState.setErrorFlag(errorFlag);
-
-        if (currentState instanceof HeadersReceivedState)
-        {
-            newState.setStatusText(((HeadersReceivedState)currentState).statusText);
-        }
 
         return this.changeState(newState);
     }
@@ -565,7 +553,7 @@ public class XmlHttpRequest extends HostObject
             throw new XmlHttpRequestException(msg);
         }
     }
-    
+
     private class UnsentState extends RequestState
     {
         public UnsentState()
@@ -949,12 +937,10 @@ public class XmlHttpRequest extends HostObject
 
     private class HeadersReceivedState extends RequestState
     {
-        private int statusCode;
-        private String statusText;
-        
-        public HeadersReceivedState()
-        {
+        public HeadersReceivedState(int statusCode, String statusText) {
             super(HEADERS_RECEIVED);
+            XmlHttpRequest.this.statusCode = statusCode;
+            XmlHttpRequest.this.statusText = statusText;
         }
         
         protected HeadersReceivedState(short state)
@@ -966,19 +952,10 @@ public class XmlHttpRequest extends HostObject
             return statusCode;
         }
 
-        public void setStatusCode(int statusCode) {
-            this.statusCode = statusCode;
-        }
-
         @Override
         public String getStatusText() throws ScriptException
         {
-            return this.statusText;
-        }
-        
-        public void setStatusText(String statusText)
-        {
-            this.statusText = statusText;
+            return statusText;
         }
         
         @Override
