@@ -9,7 +9,7 @@
       <script-engine class="net.ardvaark.jackbot.scripting.ecma.ECMAEngine" />
       
       <!-- The server and any alternates. -->
-      <server name="irc.10forward.com" />
+      <server name="irc.10forward.com" port="6443" ssl="true" />
       
       <!-- Load any Java-based plugins. -->
       <!-- <plugin name="full.java.class" /> -->
@@ -25,7 +25,7 @@
       <![CDATA[
          bot.join("#botdev");
 
-         var twitter = new TwitterClient("#botdev", "PoundTVD", "foo");
+         //var twitter = new TwitterClient("#botdev", "PoundTVD", "foo");
       ]]>
       </logon-script>
    </JackBot>

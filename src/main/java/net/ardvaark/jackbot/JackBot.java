@@ -17,16 +17,9 @@
 
 package net.ardvaark.jackbot;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-
 import net.ardvaark.jackbot.logging.Log;
 import net.ardvaark.jackbot.plugin.BasicIRCFunctions;
 import net.ardvaark.jackbot.scripting.ScriptingEngine;
-
 import org.apache.commons.io.FilenameUtils;
 import org.codehaus.classworlds.ClassRealm;
 import org.codehaus.classworlds.ClassWorld;
@@ -34,6 +27,12 @@ import org.codehaus.classworlds.DuplicateRealmException;
 import org.codehaus.classworlds.NoSuchRealmException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 
 /**
  * The main class of the JackBot IRC Bot.
@@ -136,24 +135,26 @@ public class JackBot
 
             // Get the servers the bot will connect to.
             NodeList serverNodes = root.getElementsByTagName("server");
-            String serverName = null;
-            String serverPort = null;
 
             for (int i = 0; i < serverNodes.getLength(); i++)
             {
-                serverName = ((Element) serverNodes.item(i)).getAttribute("name");
-                serverPort = ((Element) serverNodes.item(i)).getAttribute("port");
+                String serverName = ((Element) serverNodes.item(i)).getAttribute("name");
+                String serverPort = ((Element) serverNodes.item(i)).getAttribute("port");
+                String useSsl = ((Element) serverNodes.item(i)).getAttribute("ssl");
+                
 
-                if (serverPort.equals(""))
-                {
+                if (serverPort == null || serverPort.isEmpty()) {
                     serverPort = "6667";
                 }
+                
+                if (useSsl == null || useSsl.isEmpty()) {
+                    useSsl = Boolean.FALSE.toString();
+                }
 
-                servers.add(new Server(serverName, serverPort));
+                servers.add(new Server(serverName, serverPort, useSsl));
             }
 
-            if (servers.size() == 0)
-            {
+            if (servers.isEmpty()) {
                 log.fatal("No servers were specified in the configuration file.  Exiting.");
                 System.exit(JackBot.ERROR_BAD_CONFIG);
             }
@@ -166,8 +167,7 @@ public class JackBot
             ClassRealm pluginRealm = this.world.getRealm("jackbot.plugins");
             PluginLoader pluginLoader = new PluginLoader(pluginRealm.getClassLoader(), pluginNodes);
             
-            for (JackBotPlugin plugin : pluginLoader.getPlugins())
-            {
+            for (JackBotPlugin plugin : pluginLoader.getPlugins()) {
                 bot.addMessageListener(plugin);
             }
             
@@ -249,7 +249,7 @@ public class JackBot
                     currentServer = servers.get(currentServerIndex++);
                     currentServerIndex %= servers.size();
 
-                    bot.connect(currentServer.getName(), currentServer.getPort());
+                    bot.connect(currentServer.getName(), currentServer.getPort(), currentServer.getUseSsl());
                     bot.logon();
 
                     this.ensureValidNick(bot);

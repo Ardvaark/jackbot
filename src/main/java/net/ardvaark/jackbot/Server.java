@@ -32,8 +32,9 @@ final class Server
      * 
      * @param name The name of the server.
      * @param port The port number.
+     * @param useSsl Whether to use SSL.
      */
-    public Server(String name, int port)
+    public Server(String name, int port, boolean useSsl)
     {
         this.name = name;
         this.port = port;
@@ -45,11 +46,13 @@ final class Server
      * 
      * @param name The name of the server.
      * @param port The port number of the server.
+     * @param useSsl Whether to use SSL.
      */
-    public Server(String name, String port)
+    public Server(String name, String port, String useSsl)
     {
         this.name = name;
         this.port = Integer.parseInt(port);
+        this.useSsl = Boolean.parseBoolean(useSsl);
     }
 
     /**
@@ -73,12 +76,15 @@ final class Server
     }
 
     /**
-     * The name of the server.
+     * Gets whether this server should be connected to over SSL.
+     *
+     * @return True if this server connection expects SSL.
      */
-    private String name;
+    public boolean getUseSsl() {
+        return useSsl;
+    }
 
-    /**
-     * The port of the server.
-     */
-    private int    port;
+    private String  name;
+    private int     port;
+    private boolean useSsl;
 }

@@ -17,16 +17,13 @@
 
 package net.ardvaark.jackbot;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import net.ardvaark.jackbot.logging.Log;
+
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocketFactory;
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-
-import net.ardvaark.jackbot.logging.Log;
 
 /**
  * Implements an IRC client with minimal functionality. This includes:
@@ -84,13 +81,24 @@ public class IRCClient
      * 
      * @param hostname The name of the host server to which to connect.
      * @param port The port number to which to connect.
+     * @param useSsl Whether the connection should be made over SSL.
      * @throws IOException Thrown if any errors occur in the underlying IO
      *         classes.
      */
-    public void connect(String hostname, int port) throws IOException
+    public void connect(String hostname, int port, boolean useSsl) throws IOException
     {
+        SocketFactory socketFactory;
+        
+        if (useSsl) {
+            socketFactory = SSLSocketFactory.getDefault();
+        }
+        else {
+            socketFactory = SocketFactory.getDefault();
+        }
+        
+        
         // Create a channel to the server.
-        this.socket = new Socket(hostname, port);
+        this.socket = socketFactory.createSocket(hostname, port);
 
         // Set the timeout on the socket read.
         this.socket.setSoTimeout(this.socketTimeout);
@@ -117,11 +125,11 @@ public class IRCClient
      * @param hostname The name of the host server to which to connect.
      * @throws IOException Thrown if any errors occur in the underlying IO
      *         classes.
-     * @see #connect(String, int)
+     * @see #connect(String, int, boolean)
      */
     public void connect(String hostname) throws IOException
     {
-        this.connect(hostname, 6667);
+        this.connect(hostname, 6667, false);
     }
 
     /**
