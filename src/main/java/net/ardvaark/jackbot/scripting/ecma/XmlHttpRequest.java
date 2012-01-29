@@ -1,20 +1,17 @@
 package net.ardvaark.jackbot.scripting.ecma;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import net.ardvaark.jackbot.logging.Log;
+import net.ardvaark.jackbot.scripting.ScriptException;
+import org.apache.commons.httpclient.*;
+import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.commons.httpclient.methods.*;
+import org.apache.commons.httpclient.params.HttpClientParams;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.xml.XMLObject;
+import org.mozilla.javascript.xmlimpl.XMLLibImpl;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,35 +22,12 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpState;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.DeleteMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.HeadMethod;
-import org.apache.commons.httpclient.methods.OptionsMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.commons.httpclient.params.HttpClientParams;
-import org.apache.commons.io.IOUtils;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.xml.XMLObject;
-import org.mozilla.javascript.xmlimpl.XMLLibImpl;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-
-import net.ardvaark.jackbot.logging.Log;
-import net.ardvaark.jackbot.scripting.ScriptException;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.text.MessageFormat;
+import java.util.*;
 
 /**
  * A client for doing synchronous and asynchronous HTTP requests from within
@@ -152,7 +126,7 @@ public class XmlHttpRequest extends HostObject
     // State
     private boolean aborted;
     private RequestState currentState;
-    
+
     // Request info
     private String storedMethod;
     private URI storedUri;
@@ -260,6 +234,10 @@ public class XmlHttpRequest extends HostObject
      */
     public synchronized int jsGet_status() throws ScriptException {
         return this.currentState.getStatusCode();
+    }
+    
+    public synchronized boolean jsGet_error() throws ScriptException {
+        return this.currentState.getErrorFlag();
     }
     
     /**
@@ -546,7 +524,12 @@ public class XmlHttpRequest extends HostObject
             this.throwInvalidStateException();
             return null; // Will never happen
         }
-        
+
+        public boolean getErrorFlag() throws ScriptException {
+            this.throwInvalidStateException();
+            return false; // Will never happen
+        }
+
         protected void throwInvalidStateException() throws ScriptException
         {
             String msg = MessageFormat.format("Invalid state: {0}", this.getValue());
@@ -782,6 +765,8 @@ public class XmlHttpRequest extends HostObject
                     {
                         if (!aborted)
                         {
+                            // Uncomment to simulate a network error.
+                            // throw new UnknownHostException("TESTING");
                             client.executeMethod(HostConfiguration.ANY_HOST_CONFIGURATION, method, state);
                         }
                         
@@ -861,7 +846,13 @@ public class XmlHttpRequest extends HostObject
                     try
                     {
                         changeToDoneState(true);
-                        fireReadyStateChanged();
+                        
+                        if (!async) {
+                            throw new ScriptException("An error occurred.", e);
+                        }
+                        else {
+                            fireReadyStateChanged();
+                        }
                     }
                     catch (ScriptException e2)
                     {
@@ -1050,9 +1041,9 @@ public class XmlHttpRequest extends HostObject
         {
             super(DONE);
         }
-        
-        public boolean getErrorFlag()
-        {
+
+        @Override
+        public boolean getErrorFlag() {
             return this.errorFlag;
         }
         
@@ -1060,7 +1051,7 @@ public class XmlHttpRequest extends HostObject
         {
             this.errorFlag = flag;
         }
-        
+
         @Override
         public void abort() throws ScriptException
         {

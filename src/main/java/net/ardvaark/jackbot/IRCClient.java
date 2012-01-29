@@ -95,8 +95,7 @@ public class IRCClient
         else {
             socketFactory = SocketFactory.getDefault();
         }
-        
-        
+
         // Create a channel to the server.
         this.socket = socketFactory.createSocket(hostname, port);
 
