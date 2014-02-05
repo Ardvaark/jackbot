@@ -1,0 +1,13 @@
+# Maven Output
+/target/
+
+# IntelliJ Project Files
+*.iml
+*.ipr
+*.iws
+
+# Local data store
+persistent-data-store.bin
+
+# Mac stuff
+.DS_Store
